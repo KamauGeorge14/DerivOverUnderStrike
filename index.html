@@ -1,0 +1,2485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O5U4 — Dual Digit Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0e1318;
+    --border: #1a2330;
+    --accent: #00e5ff;
+    --green: #00ff88;
+    --red: #ff3d5a;
+    --gold: #ffd700;
+    --text: #e8f0f7;
+    --muted: #4a6070;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(0,229,255,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(0,255,136,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease;
+  }
+
+  .logo {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .title {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .card-label {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* CONNECT SECTION */
+  .connect-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  input[type="text"], input[type="password"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus { border-color: var(--accent); }
+
+  .btn-connect {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-connect:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-connect:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* STATUS DOT */
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+
+  .dot.connected { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+  .dot.error { background: var(--red); }
+
+  .status-text {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+  }
+
+  /* BALANCE */
+  .balance-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .balance-amount {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--green);
+    letter-spacing: -1px;
+  }
+
+  .balance-currency {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* MARKET SELECT */
+  select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a6070' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
+
+  select:focus { border-color: var(--accent); }
+  select option { background: #0e1318; }
+
+  /* STAKE */
+  .stake-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  .stake-label {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  input[type="number"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: center;
+  }
+
+  input[type="number"]:focus { border-color: var(--accent); }
+
+  /* DIGIT FREQUENCY */
+  .freq-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .freq-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .freq-digit {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+  }
+
+  .freq-fill {
+    width: 100%;
+    border-radius: 4px;
+    transition: height 0.4s ease, background 0.3s;
+    min-height: 2px;
+  }
+
+  .freq-count {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+  }
+
+  /* LAST DIGIT */
+  .last-digit-display {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .last-digit-num {
+    font-size: 64px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+
+  .last-digit-price {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* TRADE BUTTON */
+  .trade-btn {
+    width: 100%;
+    padding: 20px;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 1px;
+  }
+
+  .trade-btn:not(:disabled) {
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    color: var(--bg);
+    box-shadow: 0 8px 32px rgba(0,229,255,0.25);
+  }
+
+  .trade-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,229,255,0.35);
+  }
+
+  .trade-btn:not(:disabled):active {
+    transform: translateY(0);
+  }
+
+  .trade-btn:disabled {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  .trade-btn-sub {
+    font-size: 11px;
+    font-weight: 400;
+    font-family: 'JetBrains Mono', monospace;
+    display: block;
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+
+  /* DUAL INDICATOR */
+  .dual-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .side-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .side-card.win {
+    border-color: var(--green);
+    background: rgba(0,255,136,0.05);
+    box-shadow: 0 0 20px rgba(0,255,136,0.1);
+  }
+
+  .side-card.lose {
+    border-color: var(--red);
+    background: rgba(255,61,90,0.05);
+  }
+
+  .side-card.pending {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.05);
+    animation: glowPulse 1s infinite;
+  }
+
+  .side-label {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .side-value {
+    font-size: 28px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .side-result {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 4px;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .stat-lbl {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* HISTORY */
+  .history-list {
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .history-item:last-child { border-bottom: none; }
+
+  .history-digit {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .hist-win { color: var(--green); }
+  .hist-loss { color: var(--red); }
+  .hist-double-loss { color: var(--muted); }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(0,229,255,0.1); }
+    50% { box-shadow: 0 0 20px rgba(0,229,255,0.3); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  .shake { animation: shake 0.3s ease; }
+
+  .empty-history {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 20px;
+  }
+
+  /* ANIMATION DELAYS */
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .card:nth-child(4) { animation-delay: 0.4s; }
+
+  /* ── AUTO TRADE ─────────────────────────────── */
+  .auto-toggle-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .auto-toggle-btn.active {
+    border-color: var(--green);
+    background: rgba(0,255,136,0.08);
+    color: var(--green);
+    box-shadow: 0 0 20px rgba(0,255,136,0.15);
+  }
+  .auto-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .auto-toggle-btn.active .auto-dot {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse-dot 1.2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.5; transform:scale(0.7); }
+  }
+  .auto-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .auto-setting-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .auto-setting-label {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .auto-setting-box input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    outline: none;
+  }
+  .auto-log {
+    margin-top: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    height: 160px;
+    overflow-y: auto;
+    display: none;
+  }
+  .auto-log.visible { display: block; }
+  .log-entry {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    line-height: 1.6;
+  }
+  .log-entry.trade { color: var(--green); }
+  .log-entry.wait  { color: var(--muted); }
+  .log-entry.loss  { color: var(--red); }
+  .log-entry.stop  { color: var(--gold); font-weight: 700; }
+  .auto-score-bar {
+    margin-top: 8px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    display: none;
+  }
+  .auto-score-bar.visible { display: block; }
+  .auto-score-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s, background 0.4s;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">Deriv Digit Bot</div>
+    <div class="title">O5 · U4</div>
+    <div class="subtitle">Over 5 & Under 4 — Dual Strike</div>
+  </div>
+
+  <!-- CONNECT -->
+  <div class="card">
+    <div class="card-label">API Connection</div>
+    <div class="connect-row">
+      <input type="password" id="apiToken" placeholder="Enter Deriv API token..." />
+      <button class="btn-connect" id="btnConnect" onclick="connectWithToken()">Connect</button>
+    </div>
+    <div class="status-row">
+      <div class="dot" id="statusDot"></div>
+      <span class="status-text" id="statusText">Not connected</span>
+    </div>
+  </div>
+
+  <!-- BALANCE -->
+  <div class="card" id="balanceCard" style="display:none">
+    <div class="card-label">Account Balance</div>
+    <div class="balance-display">
+      <div>
+        <div class="balance-amount" id="balanceAmount">0.00</div>
+        <div class="balance-currency" id="balanceCurrency">USD</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">ACCOUNT</div>
+        <div style="font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--text)" id="accountId">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKET & STAKE -->
+  <div class="card" id="tradeSetup" style="display:none">
+    <div class="card-label">Trade Setup</div>
+    <select id="market" onchange="if(connected){subscribeToMarket();fetchPayout();onMarketChange();}">
+      <optgroup label="Volatility Indices">
+        <option value="R_10">Volatility 10 Index</option>
+        <option value="R_25">Volatility 25 Index</option>
+        <option value="R_50">Volatility 50 Index</option>
+        <option value="R_75" selected>Volatility 75 Index</option>
+        <option value="R_100">Volatility 100 Index</option>
+        <option value="1HZ10V">Volatility 10 (1s)</option>
+        <option value="1HZ25V">Volatility 25 (1s)</option>
+        <option value="1HZ50V">Volatility 50 (1s)</option>
+        <option value="1HZ75V">Volatility 75 (1s)</option>
+        <option value="1HZ100V">Volatility 100 (1s)</option>
+      </optgroup>
+    </select>
+    <div class="stake-row">
+      <span class="stake-label">STAKE $</span>
+      <input type="number" id="stake" value="5" min="1" step="0.5" oninput="fetchPayout()" />
+    </div>
+
+    <!-- PAYOUT PREVIEW -->
+    <div id="payoutPreview" style="margin-top:14px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;display:none">
+      <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:3px;margin-bottom:10px">PAYOUT PREVIEW</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="text-align:center;padding:8px;background:rgba(0,229,255,0.05);border-radius:8px">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)">O5 WINS → RETURNS</div>
+          <div id="payoutOver" style="font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">—</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:rgba(255,215,0,0.05);border-radius:8px">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)">U4 WINS → RETURNS</div>
+          <div id="payoutUnder" style="font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--gold)">—</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:rgba(0,255,136,0.05);border-radius:8px">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)">NET PROFIT (WIN - LOSS)</div>
+          <div id="payoutNet" style="font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--green)">—</div>
+          <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-top:2px" id="payoutNetSub">winner return − both stakes</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:rgba(255,61,90,0.05);border-radius:8px">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)">IF 4 OR 5 HITS</div>
+          <div id="payoutLoss" style="font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--red)">—</div>
+          <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-top:2px">both stakes lost</div>
+        </div>
+      </div>
+      <div id="payoutLoading" style="text-align:center;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);display:none">Fetching rates...</div>
+    </div>
+
+    <!-- SIGNAL FILTER -->
+    <div style="margin-top:14px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:3px">SIGNAL FILTER</div>
+        <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;margin:-6px;-webkit-tap-highlight-color:transparent" onclick="toggleFilter()" ontouchend="toggleFilter();event.preventDefault()">
+          <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)" id="filterLabel">ON</span>
+          <div style="position:relative;width:40px;height:22px;pointer-events:none">
+            <div id="filterTrack" style="position:absolute;inset:0;background:var(--green);border-radius:20px;transition:background 0.2s;box-shadow:0 0 8px rgba(0,255,136,0.4)"></div>
+            <div id="filterThumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;transform:translateX(18px)"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);white-space:nowrap">Avoid 4 &amp; 5 in last</span>
+        <input type="number" id="filterTicks" value="3" min="1" max="10" style="width:60px;text-align:center;font-size:14px;padding:6px 10px" />
+        <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted)">ticks</span>
+      </div>
+      <div id="filterStatus" style="margin-top:10px;padding:8px;border-radius:8px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-align:center;background:rgba(255,255,255,0.03)">
+        Waiting for ticks...
+      </div>
+    </div>
+  </div>
+
+
+  <!-- DIGIT DISPLAY + FREQUENCY -->
+  <div class="card" id="digitCard" style="display:none">
+    <div class="card-label" id="digitCardLabel">Last Digit · Frequency Analysis</div>
+    <div class="last-digit-display">
+      <div class="last-digit-num" id="lastDigitNum">—</div>
+      <div class="last-digit-price" id="lastDigitPrice">Waiting for ticks...</div>
+    </div>
+    <div class="freq-grid" id="freqGrid"></div>
+  </div>
+
+  <!-- DUAL SIDE CARDS -->
+  <div class="dual-row" id="dualRow" style="display:none">
+    <div class="side-card" id="overCard">
+      <div class="side-label">OVER 5</div>
+      <div class="side-value" style="color:var(--accent)">O5</div>
+      <div id="overPrediction" style="font-size:10px;font-family:'JetBrains Mono',monospace;margin-top:4px;padding:3px 8px;border-radius:20px;display:inline-block">—</div>
+      <div class="side-result" id="overResult">—</div>
+    </div>
+    <div class="side-card" id="underCard">
+      <div class="side-label">UNDER 4</div>
+      <div class="side-value" style="color:var(--gold)">U4</div>
+      <div id="underPrediction" style="font-size:10px;font-family:'JetBrains Mono',monospace;margin-top:4px;padding:3px 8px;border-radius:20px;display:inline-block">—</div>
+      <div class="side-result" id="underResult">—</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row" id="statsRow" style="display:none">
+    <div class="stat-box">
+      <div class="stat-val" style="color:var(--green)" id="statWins">0</div>
+      <div class="stat-lbl">WINS</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" style="color:var(--red)" id="statLosses">0</div>
+      <div class="stat-lbl">LOSSES</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="statPnl">$0.00</div>
+      <div class="stat-lbl">P&L</div>
+    </div>
+  </div>
+
+  <!-- TRADE BUTTON -->
+  <div id="tradeBtnWrap" style="display:none; margin-bottom:16px">
+    <button class="trade-btn" id="tradeBtn" onclick="placeTrade()" disabled>
+      PLACE TRADE
+      <span class="trade-btn-sub" id="tradeBtnSub">Connect to start</span>
+    </button>
+  </div>
+
+  <!-- AUTO TRADE -->
+  <div class="card" id="autoTradeCard" style="display:none">
+    <div class="card-label">Automatic Trading</div>
+
+    <button class="auto-toggle-btn" id="autoToggleBtn" onclick="toggleAutoTrade()">
+      <div class="auto-dot"></div>
+      <span id="autoToggleText">AUTO TRADE — OFF</span>
+    </button>
+
+    <div class="auto-settings">
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Confidence Threshold</div>
+        <input type="number" id="autoThreshold" value="75" min="50" max="95" step="5" />
+      </div>
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Analysis Window (ticks)</div>
+        <input type="number" id="autoWindow" value="50" min="10" max="100" step="5" />
+      </div>
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Cooldown After Loss</div>
+        <input type="number" id="autoCooldown" value="5" min="1" max="20" step="1" />
+      </div>
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Max Loss Limit (%)</div>
+        <input type="number" id="autoMaxLoss" value="50" min="10" max="90" step="5" />
+      </div>
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Profit Target (%)</div>
+        <input type="number" id="autoProfitTarget" value="10" min="1" max="50" step="1" />
+      </div>
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Min Gap (ticks)</div>
+        <input type="number" id="autoMinGap" value="5" min="1" max="20" step="1" />
+      </div>
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Max Trades / Session</div>
+        <input type="number" id="autoMaxTrades" value="10" min="1" max="50" step="1" />
+      </div>
+      <div class="auto-setting-box">
+        <div class="auto-setting-label">Max Stake % Balance</div>
+        <input type="number" id="autoMaxStakePct" value="5" min="1" max="20" step="1" />
+      </div>
+    </div>
+
+    <div class="auto-score-bar" id="autoScoreBar">
+      <div class="auto-score-fill" id="autoScoreFill" style="width:0%"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)" id="autoScoreLabel" style="display:none">
+      <span>AI CONFIDENCE</span>
+      <span id="autoScoreVal">—</span>
+    </div>
+
+    <div class="auto-log" id="autoLog"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card" id="historyCard" style="display:none">
+    <div class="card-label">Trade History</div>
+    <div class="history-list" id="historyList">
+      <div class="empty-history">No trades yet</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── STATE ──────────────────────────────────────────────
+  let ws = null;
+  let connected = false;
+  let balance = 0;
+  let currency = 'USD';
+  let accountId = '';
+  let lastDigit = null;
+  let currentPrice = null;
+  let digitCounts = new Array(10).fill(0);
+  let totalTicks = 0;
+  let trading = false;
+  let pendingOver = false;
+  let pendingUnder = false;
+  let overResult = null;
+  let underResult = null;
+  let wins = 0;
+  let losses = 0;
+  let pnl = 0;
+  let history = [];
+  let currentMarket = 'R_75';
+  let tickSubscription = null;
+  let pendingProposals = {};
+  let settledContracts = new Set();
+  let tradeDigit = null;
+  let currentPipSize = 4; // default, updated from tick.pip_size
+  let heartbeatTimer = null;
+  let reconnectTimer = null;
+  let lastToken = '';
+
+  // ── APP CONFIG ─────────────────────────────────────────
+  const APP_ID = 1089;
+
+  function connectWithToken() {
+    const token = document.getElementById('apiToken').value.trim();
+    if (!token) { setStatus('Enter API token', 'error'); return; }
+    document.getElementById('btnConnect').disabled = true;
+    connectAPI(token);
+  }
+
+  // ── HEARTBEAT ──────────────────────────────────────────
+  function startHeartbeat() {
+    stopHeartbeat();
+    heartbeatTimer = setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ ping: 1 }));
+      }
+    }, 30000);
+  }
+
+  function stopHeartbeat() {
+    if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+  }
+
+  // ── CONNECT ────────────────────────────────────────────
+  function connectAPI(token) {
+    if (!token) return;
+
+    if (ws) { ws.onclose = null; ws.onerror = null; ws.close(); ws = null; }
+    tickSubscription = null; // always start fresh on new connection
+    stopHeartbeat();
+    setStatus('Connecting...', '');
+
+    ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=' + APP_ID);
+
+    ws.onopen = () => {
+      lastToken = token;
+      setStatus('Authorizing...', '');
+      ws.send(JSON.stringify({ authorize: token }));
+      startHeartbeat();
+    };
+
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        handleMessage(data);
+      } catch (err) {
+        console.error('Parse error:', err);
+      }
+    };
+
+    ws.onerror = () => {
+      setStatus('Connection error', 'error');
+      connected = false;
+    };
+
+    ws.onclose = (e) => {
+      connected = false;
+      tickSubscription = null; // clear so next connect starts a fresh subscription
+      stopHeartbeat();
+      if (lastToken && e.code !== 1000) {
+        setStatus('Connection lost — reconnecting in 3s...', 'error');
+        reconnectTimer = setTimeout(() => {
+          if (!connected) connectAPI(lastToken);
+        }, 3000);
+      }
+    };
+  }
+
+  // ── INIT ON LOAD ───────────────────────────────────────
+  window.addEventListener('load', () => {
+    initFreqGrid();
+  });
+
+  // ── MESSAGE HANDLER ────────────────────────────────────
+  function handleMessage(data) {
+    if (data.error) {
+      const isAuthError = data.msg_type === 'authorize' || !connected;
+      if (isAuthError) {
+        setStatus('Auth error: ' + data.error.message, 'error');
+        connected = false;
+        lastToken = '';
+        document.getElementById('btnConnect').disabled = false;
+        if (ws) { ws.onclose = null; ws.close(); ws = null; }
+      } else {
+        console.warn('API error:', data.error.message);
+        if (trading) {
+          trading = false;
+          pendingOver = false;
+          pendingUnder = false;
+          trading = false;
+          pendingOver = false;
+          pendingUnder = false;
+          document.getElementById('tradeBtn').disabled = false;
+          document.getElementById('tradeBtnSub').textContent = 'Over 5 + Under 4 simultaneously';
+          setOverCard('', 'O5', 'Error');
+          setUnderCard('', 'U4', 'Error');
+          alert('Trade error: ' + data.error.message);
+        }
+      }
+      return;
+    }
+
+    if (data.msg_type === 'authorize') {
+      connected = true;
+      balance = data.authorize.balance;
+      currency = data.authorize.currency;
+      accountId = data.authorize.loginid;
+
+      setStatus('Connected · ' + accountId, 'connected');
+      document.getElementById('btnConnect').disabled = false;
+      document.getElementById('btnConnect').textContent = 'Reconnect';
+
+      updateBalance(balance);
+
+      // Show UI
+      document.getElementById('balanceCard').style.display = 'block';
+      document.getElementById('tradeSetup').style.display = 'block';
+      document.getElementById('digitCard').style.display = 'block';
+      document.getElementById('dualRow').style.display = 'grid';
+      document.getElementById('statsRow').style.display = 'grid';
+      document.getElementById('tradeBtnWrap').style.display = 'block';
+      document.getElementById('historyCard').style.display = 'block';
+      document.getElementById('autoTradeCard').style.display = 'block';
+
+      // Subscribe to balance updates so balance refreshes after every trade
+      ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+
+      // Subscribe to ticks
+      subscribeToMarket(); // also updates digitCardLabel
+      setTimeout(fetchPayout, 500);
+    }
+
+    if (data.msg_type === 'tick') {
+      const tick = data.tick;
+
+      const price = tick.quote;
+      if (tick.pip_size !== undefined) currentPipSize = tick.pip_size;
+      const priceStr = price.toFixed(currentPipSize);
+      const digit = parseInt(priceStr[priceStr.length - 1]);
+
+      currentPrice = price;
+      lastDigit = digit;
+      totalTicks++;
+      digitCounts[digit]++;
+
+      updateDigitDisplay(digit, price);
+      updateFreqGrid();
+
+      // Track recent digits for signal filter
+      recentDigits.push(digit);
+      if (recentDigits.length > 20) recentDigits.shift();
+      if (connected) updateFilterStatus();
+    }
+
+    if (data.msg_type === 'buy') {
+      const contractId = data.buy.contract_id;
+      const shortcode = data.buy.shortcode || '';
+      const isOver = shortcode.startsWith('DIGITOVER');
+      const isUnder = shortcode.startsWith('DIGITUNDER');
+
+      if (isOver) {
+        overContractId = contractId;
+        setOverCard('pending', 'O5', 'Open #' + contractId);
+      } else if (isUnder) {
+        underContractId = contractId;
+        setUnderCard('pending', 'U4', 'Open #' + contractId);
+      }
+
+      // Subscribe to settlement updates using shortcode-derived tag
+      ws.send(JSON.stringify({
+        proposal_open_contract: 1,
+        contract_id: contractId,
+        subscribe: 1,
+        passthrough: { tag: isOver ? 'over' : 'under' }
+      }));
+    }
+
+    if (data.msg_type === 'proposal_open_contract') {
+      const contract = data.proposal_open_contract;
+      const tag = data.passthrough && data.passthrough.tag;
+
+      // Log key settlement fields
+      console.log('[POC]', tag, 
+        'status:', contract.status,
+        'is_settled:', contract.is_settled,
+        'is_expired:', contract.is_expired,
+        'is_valid_to_sell:', contract.is_valid_to_sell,
+        'profit:', contract.profit,
+        'contract_id:', contract.contract_id
+      );
+
+      if (!trading) return;
+
+      // Only settle when Deriv confirms final result:
+      // - status explicitly 'won' or 'lost'
+      // - OR contract expired AND can no longer be sold (truly done)
+      const isDone = contract.status === 'won' ||
+                     contract.status === 'lost' ||
+                     (contract.is_expired === 1 && contract.is_valid_to_sell === 0);
+
+      console.log('[POC isDone]', tag, isDone);
+      if (!isDone) return;
+
+      const profit = parseFloat(contract.profit);
+      const contractId = contract.contract_id;
+
+      // Prevent double-processing: skip if this side already settled
+      const earlyTag = data.echo_req && data.echo_req.passthrough && data.echo_req.passthrough.tag;
+      if (earlyTag === 'over' && !pendingOver) return;
+      if (earlyTag === 'under' && !pendingUnder) return;
+      if (!earlyTag && contractId === overContractId && !pendingOver) return;
+      if (!earlyTag && contractId === underContractId && !pendingUnder) return;
+
+      // Match using passthrough tag (most reliable), then contract ID, then contract_type
+      const pocTag = data.echo_req && data.echo_req.passthrough && data.echo_req.passthrough.tag;
+      let side = null;
+      if (pocTag === 'over') {
+        side = 'over';
+      } else if (pocTag === 'under') {
+        side = 'under';
+      } else if (contractId && contractId === overContractId) {
+        side = 'over';
+      } else if (contractId && contractId === underContractId) {
+        side = 'under';
+      } else if (contract.contract_type === 'DIGITOVER') {
+        side = 'over';
+      } else if (contract.contract_type === 'DIGITUNDER') {
+        side = 'under';
+      }
+
+      if (!side) return;
+
+      if (side === 'over' && pendingOver) {
+        overResult = profit;
+        pendingOver = false;
+        // Capture the actual settlement digit from exit tick
+        if (contract.exit_tick_display_value) {
+          const exitStr = contract.exit_tick_display_value.toString();
+          tradeDigit = parseInt(exitStr[exitStr.length - 1]);
+        }
+        showSideResult('over', profit);
+      } else if (side === 'under' && pendingUnder) {
+        underResult = profit;
+        pendingUnder = false;
+        // Capture the actual settlement digit from exit tick
+        if (contract.exit_tick_display_value) {
+          const exitStr = contract.exit_tick_display_value.toString();
+          tradeDigit = parseInt(exitStr[exitStr.length - 1]);
+        }
+        showSideResult('under', profit);
+      }
+
+      if (!pendingOver && !pendingUnder) {
+        settleTrade();
+      }
+    }
+
+    if (data.msg_type === 'balance') {
+      balance = data.balance.balance;
+      updateBalance(balance);
+    }
+
+    if (data.msg_type === 'proposal') {
+      const reqId = data.req_id;
+      if (reqId && pendingProposals[reqId]) {
+        const payout = parseFloat(data.proposal.payout);
+        pendingProposals[reqId](payout);
+        delete pendingProposals[reqId];
+      }
+    }
+  }
+
+  // ── SUBSCRIBE TO MARKET ────────────────────────────────
+  const MARKET_NAMES = {
+    'R_10': 'Volatility 10', 'R_25': 'Volatility 25', 'R_50': 'Volatility 50',
+    'R_75': 'Volatility 75', 'R_100': 'Volatility 100',
+    '1HZ10V': 'Volatility 10 (1s)', '1HZ25V': 'Volatility 25 (1s)',
+    '1HZ50V': 'Volatility 50 (1s)', '1HZ75V': 'Volatility 75 (1s)',
+    '1HZ100V': 'Volatility 100 (1s)'
+  };
+
+  function subscribeToMarket() {
+    currentMarket = document.getElementById('market').value;
+
+    // Update card label to show active market
+    const marketName = MARKET_NAMES[currentMarket] || currentMarket;
+    document.getElementById('digitCardLabel').textContent = 'Last Digit · ' + marketName;
+
+    // Unsubscribe previous
+    if (tickSubscription) {
+      ws.send(JSON.stringify({ forget: tickSubscription }));
+      tickSubscription = null;
+    }
+
+    // Reset digit counts, pip size and filter history
+    digitCounts = new Array(10).fill(0);
+    totalTicks = 0;
+    recentDigits = [];
+    currentPipSize = 4;
+    initFreqGrid();
+
+    ws.send(JSON.stringify({
+      ticks: currentMarket,
+      subscribe: 1
+    }));
+
+  }
+
+
+
+  // ── PAYOUT PREVIEW ─────────────────────────────────────
+  let payoutTimer = null;
+
+  function fetchPayout() {
+    if (!connected) return;
+    clearTimeout(payoutTimer);
+    payoutTimer = setTimeout(_doFetchPayout, 600);
+  }
+
+  function _doFetchPayout() {
+    const stake = parseFloat(document.getElementById('stake').value);
+    const market = document.getElementById('market').value;
+    if (isNaN(stake) || stake < 0.35) return;
+
+    document.getElementById('payoutPreview').style.display = 'block';
+    document.getElementById('payoutLoading').style.display = 'block';
+    document.getElementById('payoutOver').textContent = '...';
+    document.getElementById('payoutUnder').textContent = '...';
+    document.getElementById('payoutNet').textContent = '...';
+    document.getElementById('payoutLoss').textContent = '...';
+
+    let overPayout = null;
+    let underPayout = null;
+
+    // req_id must be a small integer for Deriv API
+    const reqId1 = Math.floor(Math.random() * 900000) + 100000;
+    const reqId2 = Math.floor(Math.random() * 900000) + 100000;
+
+    function updatePayoutUI() {
+      if (overPayout === null || underPayout === null) return;
+      document.getElementById('payoutLoading').style.display = 'none';
+
+      // You place stake on BOTH sides = total risk is stake*2
+      // When one side wins: you get that payout back, but lose the other stake
+      // Net profit = winning payout - stake (winner) - stake (loser) = payout - 2*stake
+      const winnerPayout = Math.max(overPayout, underPayout); // they should be similar
+      const netProfit = winnerPayout - (stake * 2);
+      const fullLoss = stake * 2;
+
+      document.getElementById('payoutOver').textContent = '$' + overPayout.toFixed(2);
+      document.getElementById('payoutUnder').textContent = '$' + underPayout.toFixed(2);
+      document.getElementById('payoutNet').textContent = (netProfit >= 0 ? '+' : '') + '$' + netProfit.toFixed(2);
+      document.getElementById('payoutNet').style.color = netProfit >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('payoutLoss').textContent = '-$' + fullLoss.toFixed(2);
+    }
+
+    // Store pending proposal IDs so handleMessage can resolve them
+    pendingProposals[reqId1] = function(payout) { overPayout = payout; updatePayoutUI(); };
+    pendingProposals[reqId2] = function(payout) { underPayout = payout; updatePayoutUI(); };
+
+    ws.send(JSON.stringify({
+      proposal: 1,
+      req_id: reqId1,
+      amount: stake,
+      basis: 'stake',
+      contract_type: 'DIGITOVER',
+      currency: currency,
+      duration: 1,
+      duration_unit: 't',
+      symbol: market,
+      barrier: '5'
+    }));
+
+    ws.send(JSON.stringify({
+      proposal: 1,
+      req_id: reqId2,
+      amount: stake,
+      basis: 'stake',
+      contract_type: 'DIGITUNDER',
+      currency: currency,
+      duration: 1,
+      duration_unit: 't',
+      symbol: market,
+      barrier: '4'
+    }));
+  }
+
+  // ── SIGNAL FILTER ──────────────────────────────────────
+  let recentDigits = [];
+  let filterEnabled = true;
+
+  function toggleFilter() {
+    filterEnabled = !filterEnabled;
+    const track = document.getElementById('filterTrack');
+    const thumb = document.getElementById('filterThumb');
+    const label = document.getElementById('filterLabel');
+    if (filterEnabled) {
+      track.style.background = 'var(--green)';
+      track.style.boxShadow = '0 0 8px rgba(0,255,136,0.4)';
+      thumb.style.transform = 'translateX(18px)';
+      label.textContent = 'ON';
+    } else {
+      track.style.background = 'var(--muted)';
+      track.style.boxShadow = 'none';
+      thumb.style.transform = 'translateX(0)';
+      label.textContent = 'OFF';
+    }
+    updateFilterStatus();
+  }
+
+  function updateFilterStatus() {
+    if (!filterEnabled) {
+      document.getElementById('filterStatus').textContent = 'Filter OFF — trading on every tick';
+      document.getElementById('filterStatus').style.color = 'var(--muted)';
+      return;
+    }
+    checkSignal();
+  }
+
+  function checkSignal() {
+    const n = parseInt(document.getElementById('filterTicks').value) || 3;
+    const recent = recentDigits.slice(-n);
+    const hasDanger = recent.some(d => d === 4 || d === 5);
+    const statusEl = document.getElementById('filterStatus');
+
+    if (recent.length < n) {
+      statusEl.textContent = 'Collecting ticks... (' + recent.length + '/' + n + ')';
+      statusEl.style.color = 'var(--muted)';
+      return false;
+    }
+
+    if (hasDanger) {
+      const dangerTicks = recent.map((d,i) => d === 4 || d === 5 ? '#' + (recent.length - i) : null).filter(Boolean).join(', ');
+      statusEl.textContent = 'BLOCKED — 4 or 5 seen in last ' + n + ' ticks (' + recent.join(',') + ')';
+      statusEl.style.color = 'var(--red)';
+      return false;
+    } else {
+      statusEl.textContent = 'CLEAR — last ' + n + ' ticks: ' + recent.join(', ');
+      statusEl.style.color = 'var(--green)';
+      return true;
+    }
+  }
+
+  function isSignalClear() {
+    if (!filterEnabled) return true;
+    return checkSignal();
+  }
+
+  // ── PLACE TRADE ────────────────────────────────────────
+  let overContractId = null;
+  let underContractId = null;
+  let tradeTimeout = null;
+
+  function placeTrade() {
+    if (!connected || trading) return;
+    if (!isSignalClear()) {
+      alert('Signal filter BLOCKED: digits 4 or 5 appeared in recent ticks. Wait for a clear signal.');
+      return;
+    }
+
+    const stake = parseFloat(document.getElementById('stake').value);
+    if (isNaN(stake) || stake < 1) {
+      alert('Minimum stake is $1');
+      return;
+    }
+
+    // Both sides require equal stake — block if balance can't cover both
+    const totalRequired = stake * 2;
+    if (balance < totalRequired) {
+      alert('Insufficient balance. You need $' + totalRequired.toFixed(2) + ' to place both trades ($' + stake.toFixed(2) + ' each). Current balance: $' + balance.toFixed(2));
+      return;
+    }
+
+    const market = document.getElementById('market').value;
+
+    trading = true;
+    pendingOver = true;
+    pendingUnder = true;
+    overResult = null;
+    underResult = null;
+    overContractId = null;
+    underContractId = null;
+    settledContracts = new Set();
+    tradeDigit = lastDigit;
+
+    // Safety timeout — reset if no result after 30 seconds
+    tradeTimeout = setTimeout(() => {
+      if (trading) {
+        trading = false;
+        pendingOver = false;
+        pendingUnder = false;
+        document.getElementById('tradeBtn').disabled = false;
+        document.getElementById('tradeBtnSub').textContent = 'Over 5 + Under 4 simultaneously';
+        setOverCard('', 'O5', '—');
+        setUnderCard('', 'U4', '—');
+        setStatus('Result timeout — check your Deriv account', 'error');
+      }
+    }, 30000);
+
+    // Update UI
+    document.getElementById('tradeBtn').disabled = true;
+    document.getElementById('tradeBtnSub').textContent = 'Waiting for result...';
+
+    setOverCard('pending', 'O5', 'Sending...');
+    setUnderCard('pending', 'U4', 'Sending...');
+    document.getElementById('overPrediction').textContent = '';
+    document.getElementById('underPrediction').textContent = '';
+
+    // Place OVER 5 — passthrough tag echoed back in buy response to identify contract
+    ws.send(JSON.stringify({
+      buy: 1,
+      price: stake,
+      parameters: {
+        amount: stake,
+        basis: 'stake',
+        contract_type: 'DIGITOVER',
+        currency: currency,
+        duration: 1,
+        duration_unit: 't',
+        symbol: market,
+        barrier: '5'
+      },
+      passthrough: { tag: 'over' }
+    }));
+
+    // Place UNDER 4 — passthrough tag echoed back in buy response to identify contract
+    ws.send(JSON.stringify({
+      buy: 1,
+      price: stake,
+      parameters: {
+        amount: stake,
+        basis: 'stake',
+        contract_type: 'DIGITUNDER',
+        currency: currency,
+        duration: 1,
+        duration_unit: 't',
+        symbol: market,
+        barrier: '4'
+      },
+      passthrough: { tag: 'under' }
+    }));
+  }
+
+  // ── SETTLE TRADE ───────────────────────────────────────
+  function settleTrade() {
+    if (tradeTimeout) { clearTimeout(tradeTimeout); tradeTimeout = null; }
+    const stake = parseFloat(document.getElementById('stake').value);
+    const digit = tradeDigit !== null ? tradeDigit : lastDigit;
+
+    // overResult and underResult are net profit per side from Deriv
+    // e.g. win side: +X (profit only, stake already returned)
+    //      loss side: -stake (full stake lost)
+    // True net P&L = sum of both sides' profits
+    const totalPnl = (overResult !== null ? overResult : 0) + (underResult !== null ? underResult : 0);
+
+    pnl += totalPnl;
+
+    // A win = one side had positive profit
+    const oneWon = (overResult !== null && overResult > 0) || (underResult !== null && underResult > 0);
+    let result;
+    if (digit === 4 || digit === 5) {
+      losses++;
+      result = 'double-loss';
+    } else if (oneWon) {
+      wins++;
+      result = 'win';
+    } else {
+      losses++;
+      result = 'loss';
+    }
+
+    // Update stats
+    updateStats();
+
+    // Add to history — show true net P&L
+    addHistory(digit, totalPnl, result);
+
+    // Balance is updated accurately via the server's balance subscription message
+
+    // Re-enable button
+    trading = false;
+    document.getElementById('tradeBtn').disabled = false;
+    document.getElementById('tradeBtnSub').textContent = 'Over 5 + Under 4 simultaneously';
+  }
+
+  // ── UI HELPERS ─────────────────────────────────────────
+  function setStatus(text, type) {
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    dot.className = 'dot' + (type ? ' ' + type : '');
+    txt.textContent = text;
+    txt.style.color = type === 'connected' ? 'var(--green)' : type === 'error' ? 'var(--red)' : 'var(--muted)';
+  }
+
+  function updateBalance(bal) {
+    document.getElementById('balanceAmount').textContent = parseFloat(bal).toFixed(2);
+    document.getElementById('balanceCurrency').textContent = currency;
+    document.getElementById('accountId').textContent = accountId;
+  }
+
+  function updateDigitDisplay(digit, price) {
+    const el = document.getElementById('lastDigitNum');
+    el.textContent = digit;
+
+    // Color by zone (explicit check for 0 since it's falsy)
+    if (digit >= 0 && digit <= 3) el.style.color = 'var(--gold)';
+    else if (digit >= 6) el.style.color = 'var(--accent)';
+    else el.style.color = 'var(--red)';
+
+    document.getElementById('lastDigitPrice').textContent = price.toFixed(2);
+
+    // Highlight the active digit bar in the freq grid
+    for (let i = 0; i <= 9; i++) {
+      const bar = document.getElementById('freq-fill-' + i);
+      if (bar) bar.style.outline = (i === digit) ? '2px solid white' : 'none';
+    }
+
+    // Live prediction badges — show which side would win RIGHT NOW
+    if (!trading) {
+      const overWins  = digit > 5;
+      const underWins = digit < 4;
+      const overEl  = document.getElementById('overPrediction');
+      const underEl = document.getElementById('underPrediction');
+
+      if (overWins) {
+        overEl.textContent  = '✓ WOULD WIN';
+        overEl.style.background = 'rgba(0,255,136,0.15)';
+        overEl.style.color  = 'var(--green)';
+      } else if (digit === 5) {
+        overEl.textContent  = '✗ DANGER';
+        overEl.style.background = 'rgba(255,61,90,0.15)';
+        overEl.style.color  = 'var(--red)';
+      } else {
+        overEl.textContent  = '✗ WOULD LOSE';
+        overEl.style.background = 'rgba(255,61,90,0.10)';
+        overEl.style.color  = 'var(--red)';
+      }
+
+      if (underWins) {
+        underEl.textContent  = '✓ WOULD WIN';
+        underEl.style.background = 'rgba(0,255,136,0.15)';
+        underEl.style.color  = 'var(--green)';
+      } else if (digit === 4) {
+        underEl.textContent  = '✗ DANGER';
+        underEl.style.background = 'rgba(255,61,90,0.15)';
+        underEl.style.color  = 'var(--red)';
+      } else {
+        underEl.textContent  = '✗ WOULD LOSE';
+        underEl.style.background = 'rgba(255,61,90,0.10)';
+        underEl.style.color  = 'var(--red)';
+      }
+    }
+
+    // Enable trade button
+    if (connected && !trading) {
+      document.getElementById('tradeBtn').disabled = false;
+      document.getElementById('tradeBtnSub').textContent = 'Over 5 + Under 4 simultaneously';
+    }
+  }
+
+  function initFreqGrid() {
+    const grid = document.getElementById('freqGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i <= 9; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'freq-bar';
+      bar.innerHTML = `
+        <div class="freq-digit">${i}</div>
+        <div class="freq-fill" id="freq-fill-${i}" style="height:2px;background:var(--border)"></div>
+        <div class="freq-count" id="freq-count-${i}">0</div>
+      `;
+      grid.appendChild(bar);
+    }
+  }
+
+  function updateFreqGrid() {
+    const max = Math.max(...digitCounts, 1);
+    for (let i = 0; i <= 9; i++) {
+      const pct = digitCounts[i] / max;
+      const height = Math.max(2, pct * 40);
+      const fill = document.getElementById('freq-fill-' + i);
+      const count = document.getElementById('freq-count-' + i);
+      if (!fill) continue;
+
+      fill.style.height = height + 'px';
+      fill.style.background = i <= 3 ? 'var(--gold)' : i >= 6 ? 'var(--accent)' : 'var(--red)';
+      count.textContent = digitCounts[i];
+    }
+  }
+
+  function setOverCard(state, value, result) {
+    const card = document.getElementById('overCard');
+    const val = document.getElementById('overCard').querySelector('.side-value');
+    const res = document.getElementById('overResult');
+    card.className = 'side-card ' + state;
+    val.textContent = value;
+    res.textContent = result;
+    res.style.color = state === 'win' ? 'var(--green)' : state === 'lose' ? 'var(--red)' : 'var(--accent)';
+  }
+
+  function setUnderCard(state, value, result) {
+    const card = document.getElementById('underCard');
+    const val = document.getElementById('underCard').querySelector('.side-value');
+    const res = document.getElementById('underResult');
+    card.className = 'side-card ' + state;
+    val.textContent = value;
+    res.textContent = result;
+    res.style.color = state === 'win' ? 'var(--green)' : state === 'lose' ? 'var(--red)' : 'var(--accent)';
+  }
+
+  function showSideResult(side, profit) {
+    const isWin = profit > 0;
+    if (side === 'over') {
+      setOverCard(isWin ? 'win' : 'lose', 'O5', (isWin ? '+' : '') + profit.toFixed(2));
+    } else {
+      setUnderCard(isWin ? 'win' : 'lose', 'U4', (isWin ? '+' : '') + profit.toFixed(2));
+    }
+  }
+
+  function updateStats() {
+    document.getElementById('statWins').textContent = wins;
+    document.getElementById('statLosses').textContent = losses;
+    const pnlEl = document.getElementById('statPnl');
+    pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
+    pnlEl.style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  function addHistory(digit, totalPnl, result) {
+    const list = document.getElementById('historyList');
+
+    // Remove empty state
+    const empty = list.querySelector('.empty-history');
+    if (empty) empty.remove();
+
+    const item = document.createElement('div');
+    item.className = 'history-item';
+
+    const digitColor = digit <= 3 ? '#ffd700' : digit >= 6 ? '#00e5ff' : '#ff3d5a';
+    const pnlColor = totalPnl > 0 ? 'var(--green)' : 'var(--red)';
+    const pnlText = (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2);
+    const resultText = result === 'double-loss' ? '💥 Both lost' : totalPnl > 0 ? '✓ Win' : '✗ Loss';
+
+    item.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="history-digit" style="background:${digitColor}22;color:${digitColor}">${digit}</div>
+        <span style="color:var(--muted);font-size:11px">${resultText}</span>
+      </div>
+      <span style="color:${pnlColor};font-weight:600">${pnlText}</span>
+    `;
+
+    list.insertBefore(item, list.firstChild);
+
+    // Keep last 20
+    while (list.children.length > 20) list.removeChild(list.lastChild);
+  }
+
+  // ── AUTO TRADE ─────────────────────────────────────────
+  let autoEnabled = false;
+  let autoSessionBalance = 0;
+  let autoCooldownTicks = 0;
+  let autoTickBuffer = [];
+  const AUTO_BUFFER_MAX = 200;
+  let autoTradeCount = 0;
+  let autoTicksSinceLastTrade = 0;
+  let autoSessionProfit = 0;
+
+  // ── REINFORCEMENT LEARNING STATE ─────────────────────
+  let rlWins = 0, rlLosses = 0;
+  let rlConsecWins = 0, rlConsecLosses = 0;
+  let rlThresholdAdj = 0;
+  let rlFreqHistory = [];
+  const RL_ADJ_MAX = 10;
+
+  // ── INTELLIGENCE STATE ───────────────────────────────
+  let markovMatrix = {};        // transition counts [prev][curr]
+  let lastMarkovDigit = null;
+  let perfMemory = [];          // {market, hour, score, won} per trade
+  let volatilityBuffer = [];    // recent price values for regime detection
+  let aiRecommendation = null;  // pending recommendation for user approval
+
+  // Market-specific minimum analysis windows
+  const MARKET_WINDOWS = {
+    'R_10': 30, 'R_25': 35, 'R_50': 40, 'R_75': 50, 'R_100': 60,
+    '1HZ10V': 40, '1HZ25V': 45, '1HZ50V': 55, '1HZ75V': 60, '1HZ100V': 70
+  };
+
+  // ── PERSISTENT MEMORY ───────────────────────────────
+  // Saves per-market: Markov matrix, danger freq history, score win rate, global trade log
+  // All stored in localStorage — persists across sessions on same browser/device
+
+  function memLoad(key, fallback) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch(e) { return fallback; }
+  }
+
+  function memSave(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
+  }
+
+  // Global trade history
+  perfMemory = memLoad('aiPerfMemory', []);
+  if (perfMemory.length > 1000) perfMemory = perfMemory.slice(-1000);
+
+  function savePerfMemory() {
+    memSave('aiPerfMemory', perfMemory.slice(-1000));
+  }
+
+  // Per-market Markov matrix
+  function loadMarkovForMarket(market) {
+    markovMatrix = memLoad('aiMarkov_' + market, {});
+  }
+
+  let markovSaveTimer = null;
+  function saveMarkovForMarket(market) {
+    if (markovSaveTimer) return;
+    markovSaveTimer = setTimeout(function() {
+      memSave('aiMarkov_' + market, markovMatrix);
+      markovSaveTimer = null;
+    }, 10000);
+  }
+
+  // Per-market danger frequency history
+  function loadDangerFreqForMarket(market) {
+    rlFreqHistory = memLoad('aiDangerFreq_' + market, []);
+    if (rlFreqHistory.length > 50) rlFreqHistory = rlFreqHistory.slice(-50);
+  }
+
+  function saveDangerFreqForMarket(market) {
+    memSave('aiDangerFreq_' + market, rlFreqHistory.slice(-50));
+  }
+
+  // Per-market score win rate history
+  let scoreWinHistory = [];
+  function loadScoreWinForMarket(market) {
+    scoreWinHistory = memLoad('aiScoreWin_' + market, []);
+    if (scoreWinHistory.length > 500) scoreWinHistory = scoreWinHistory.slice(-500);
+  }
+
+  function saveScoreWinForMarket(market) {
+    memSave('aiScoreWin_' + market, scoreWinHistory.slice(-500));
+  }
+
+  function getScoreWinRate(score) {
+    const band = scoreWinHistory.filter(function(s) { return Math.abs(s.score - score) <= 8; });
+    if (band.length < 5) return null;
+    return band.filter(function(s) { return s.won; }).length / band.length;
+  }
+
+  // Memory summary for log
+  function getMemorySummary(market) {
+    const trades = perfMemory.filter(function(p) { return p.market === market; });
+    const wins = trades.filter(function(p) { return p.won; }).length;
+    const markovKeys = Object.keys(memLoad('aiMarkov_' + market, {}));
+    const sw = memLoad('aiScoreWin_' + market, []);
+    return {
+      trades: trades.length,
+      winRate: trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0,
+      markovTransitions: markovKeys.length,
+      scoreEntries: sw.length
+    };
+  }
+
+  // ── HELPER: Stop auto trade ───────────────────────────
+  function onMarketChange() {
+    if (autoEnabled) {
+      loadMarkovForMarket(currentMarket);
+      loadDangerFreqForMarket(currentMarket);
+      loadScoreWinForMarket(currentMarket);
+      var ms = getMemorySummary(currentMarket);
+      autoLog('wait', '🧠 Market switched to ' + currentMarket +
+        (ms.trades > 0 ? ' | ' + ms.trades + ' trades, ' + ms.winRate + '% WR' : ' | No memory yet'));
+    }
+  }
+
+  function stopAutoTrade() {
+    autoEnabled = false;
+    document.getElementById('autoToggleBtn').classList.remove('active');
+    document.getElementById('autoToggleText').textContent = 'AUTO TRADE — OFF';
+    document.getElementById('autoLog').classList.remove('visible');
+    document.getElementById('autoScoreBar').classList.remove('visible');
+    document.getElementById('autoScoreLabel').style.display = 'none';
+    document.getElementById('tradeBtn').disabled = false;
+    document.getElementById('tradeBtnSub').textContent = 'Over 5 + Under 4 simultaneously';
+  }
+
+  // ── TOGGLE ────────────────────────────────────────────
+  function toggleAutoTrade() {
+    if (!connected) return;
+    autoEnabled = !autoEnabled;
+    const btn = document.getElementById('autoToggleBtn');
+    const txt = document.getElementById('autoToggleText');
+    const log = document.getElementById('autoLog');
+    const bar = document.getElementById('autoScoreBar');
+    const lbl = document.getElementById('autoScoreLabel');
+
+    if (autoEnabled) {
+      autoSessionBalance = balance;
+      autoCooldownTicks = 0;
+      autoTradeCount = 0;
+      autoTicksSinceLastTrade = 0;
+      autoSessionProfit = 0;
+      rlWins = 0; rlLosses = 0;
+      rlConsecWins = 0; rlConsecLosses = 0;
+      rlThresholdAdj = 0; rlFreqHistory = [];
+      // Load all persistent memory for current market
+      loadMarkovForMarket(currentMarket);
+      loadDangerFreqForMarket(currentMarket);
+      loadScoreWinForMarket(currentMarket);
+      lastMarkovDigit = null;
+
+      btn.classList.add('active');
+      txt.textContent = 'AUTO TRADE — ON';
+      log.classList.add('visible');
+      bar.classList.add('visible');
+      lbl.style.display = 'flex';
+
+      document.getElementById('tradeBtn').disabled = true;
+      document.getElementById('tradeBtnSub').textContent = 'Auto mode active';
+
+      autoLog('stop', '⚡ Auto Trade activated — $' + autoSessionBalance.toFixed(2));
+      var mem = getMemorySummary(currentMarket);
+      if (mem.trades > 0) {
+        autoLog('wait', '🧠 Memory loaded: ' + currentMarket +
+          ' — ' + mem.trades + ' trades | Win rate: ' + mem.winRate + '%' +
+          ' | Markov: ' + mem.markovTransitions + ' transitions' +
+          ' | Score data: ' + mem.scoreEntries + ' entries');
+      } else {
+        autoLog('wait', '🧠 No memory yet for ' + currentMarket + ' — building from scratch');
+      }
+      autoLog('wait', 'Threshold: ' + document.getElementById('autoThreshold').value +
+        ' | Cooldown: ' + document.getElementById('autoCooldown').value +
+        ' | Max loss: ' + document.getElementById('autoMaxLoss').value + '%' +
+        ' | Profit target: ' + document.getElementById('autoProfitTarget').value + '%');
+      autoLog('wait', 'Max trades: ' + document.getElementById('autoMaxTrades').value +
+        ' | Min gap: ' + document.getElementById('autoMinGap').value +
+        ' | Max stake: ' + document.getElementById('autoMaxStakePct').value + '%');
+
+      // Run recommendation check on activation
+      setTimeout(runAIRecommendation, 1500);
+    } else {
+      stopAutoTrade();
+      updateAutoScore(0);
+    }
+  }
+
+  // ── LOGGING ───────────────────────────────────────────
+  function autoLog(type, msg) {
+    const log = document.getElementById('autoLog');
+    if (!log) return;
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' +
+                 now.getMinutes().toString().padStart(2,'0') + ':' +
+                 now.getSeconds().toString().padStart(2,'0');
+    const el = document.createElement('div');
+    el.className = 'log-entry ' + type;
+    el.textContent = '[' + time + '] ' + msg;
+    log.insertBefore(el, log.firstChild);
+    while (log.children.length > 100) log.removeChild(log.lastChild);
+  }
+
+  function updateAutoScore(score) {
+    const fill = document.getElementById('autoScoreFill');
+    const val  = document.getElementById('autoScoreVal');
+    if (!fill || !val) return;
+    fill.style.width = Math.min(score, 100) + '%';
+    if (score >= 75) fill.style.background = 'var(--green)';
+    else if (score >= 50) fill.style.background = 'var(--gold)';
+    else fill.style.background = 'var(--red)';
+    val.textContent = score + ' / 100';
+  }
+
+  // ── INTELLIGENCE 1: SHANNON ENTROPY ──────────────────
+  function computeEntropy(buf) {
+    if (buf.length === 0) return 0;
+    const freq = {};
+    buf.forEach(d => freq[d] = (freq[d] || 0) + 1);
+    let entropy = 0;
+    Object.values(freq).forEach(count => {
+      const p = count / buf.length;
+      if (p > 0) entropy -= p * Math.log2(p);
+    });
+    return entropy; // max ~3.32 for perfectly uniform 10 digits
+  }
+
+  // ── INTELLIGENCE 2: CHI-SQUARE TEST ──────────────────
+  function computeChiSquare(buf) {
+    if (buf.length < 20) return { stat: 0, favorable: false };
+    const expected = buf.length / 10;
+    const freq = new Array(10).fill(0);
+    buf.forEach(d => freq[d]++);
+    let chi2 = 0;
+    freq.forEach(f => chi2 += Math.pow(f - expected, 2) / expected);
+    // Check if danger digits are underrepresented (favorable)
+    const dangerExpected = buf.length * 0.2;
+    const dangerActual = freq[4] + freq[5];
+    const favorable = dangerActual < dangerExpected * 0.85; // danger >15% below expected
+    return { stat: chi2, favorable, dangerActual, dangerExpected };
+  }
+
+  // ── INTELLIGENCE 3: MARKOV TRANSITIONS ───────────────
+  function updateMarkov(digit) {
+    if (lastMarkovDigit !== null) {
+      if (!markovMatrix[lastMarkovDigit]) markovMatrix[lastMarkovDigit] = {};
+      markovMatrix[lastMarkovDigit][digit] = (markovMatrix[lastMarkovDigit][digit] || 0) + 1;
+      saveMarkovForMarket(currentMarket);
+    }
+    lastMarkovDigit = digit;
+  }
+
+  function markovDangerProb(currentDigit) {
+    // After currentDigit, what's the probability of 4 or 5 next?
+    const row = markovMatrix[currentDigit];
+    if (!row) return 0.2; // default expected
+    const total = Object.values(row).reduce((a,b) => a+b, 0);
+    if (total < 5) return 0.2;
+    return ((row[4] || 0) + (row[5] || 0)) / total;
+  }
+
+  // ── INTELLIGENCE 4: VOLATILITY REGIME ────────────────
+  function updateVolatilityBuffer(price) {
+    volatilityBuffer.push(price);
+    if (volatilityBuffer.length > 30) volatilityBuffer.shift();
+  }
+
+  function isHighVolatility() {
+    if (volatilityBuffer.length < 10) return false;
+    const recent = volatilityBuffer.slice(-10);
+    const changes = [];
+    for (let i = 1; i < recent.length; i++) {
+      changes.push(Math.abs(recent[i] - recent[i-1]));
+    }
+    const avgChange = changes.reduce((a,b) => a+b, 0) / changes.length;
+    const allChanges = [];
+    for (let i = 1; i < volatilityBuffer.length; i++) {
+      allChanges.push(Math.abs(volatilityBuffer[i] - volatilityBuffer[i-1]));
+    }
+    const baseline = allChanges.reduce((a,b) => a+b, 0) / allChanges.length;
+    return avgChange > baseline * 1.5; // 50% above baseline = high volatility
+  }
+
+  // ── INTELLIGENCE 5: PERFORMANCE MEMORY ───────────────
+  function getPerfScore(market, hour, scoreRange) {
+    const relevant = perfMemory.filter(p =>
+      p.market === market &&
+      Math.abs(p.hour - hour) <= 1 &&
+      Math.abs(p.score - scoreRange) <= 10
+    );
+    if (relevant.length < 3) return null; // not enough data
+    const wins = relevant.filter(p => p.won).length;
+    return wins / relevant.length;
+  }
+
+  function recordPerfMemory(market, hour, score, won) {
+    perfMemory.push({ market: market, hour: hour, score: score, won: won, ts: Date.now() });
+    if (perfMemory.length > 1000) perfMemory.shift();
+    savePerfMemory();
+    scoreWinHistory.push({ score: score, won: won });
+    if (scoreWinHistory.length > 500) scoreWinHistory.shift();
+    saveScoreWinForMarket(market);
+  }
+
+  // ── INTELLIGENCE 6: TIME-OF-DAY PROFILING ────────────
+  function getTimeProfile(market) {
+    const hour = new Date().getHours();
+    const hourTrades = perfMemory.filter(p => p.market === market && p.hour === hour);
+    if (hourTrades.length < 5) return null;
+    const wins = hourTrades.filter(p => p.won).length;
+    return { winRate: wins / hourTrades.length, count: hourTrades.length, hour };
+  }
+
+  // ── RL THRESHOLD ADJUSTMENT ───────────────────────────
+  function rlComputeAdj() {
+    if (autoTickBuffer.length >= 20) {
+      const w20 = autoTickBuffer.slice(-20);
+      const dangerRate = w20.filter(d => d === 4 || d === 5).length / 20;
+      rlFreqHistory.push(dangerRate);
+      if (rlFreqHistory.length > 50) rlFreqHistory.shift();
+      saveDangerFreqForMarket(currentMarket);
+    }
+    let adj = 0;
+    if (rlConsecLosses >= 2) adj += Math.min(rlConsecLosses * 3, 10);
+    if (rlFreqHistory.length >= 3) {
+      const avg = rlFreqHistory.slice(-3).reduce((a,b) => a+b, 0) / 3;
+      if (avg > 0.25) adj += 5;
+      else if (avg > 0.20) adj += 2;
+    }
+    const total = rlWins + rlLosses;
+    if (total >= 5) {
+      const winRate = rlWins / total;
+      if (winRate <= 0.4) adj += 5;
+      else if (winRate <= 0.5) adj += 2;
+    }
+    rlThresholdAdj = Math.min(RL_ADJ_MAX, Math.max(0, adj));
+    return rlThresholdAdj;
+  }
+
+  // ── AI RECOMMENDATION ENGINE ──────────────────────────
+  function runAIRecommendation() {
+    if (autoTickBuffer.length < 30) return;
+    const recs = [];
+    const currentThreshold = parseInt(document.getElementById('autoThreshold').value) || 75;
+    const currentWindow    = parseInt(document.getElementById('autoWindow').value) || 50;
+    const currentCooldown  = parseInt(document.getElementById('autoCooldown').value) || 5;
+    const currentMinGap    = parseInt(document.getElementById('autoMinGap').value) || 5;
+    const currentMaxTrades = parseInt(document.getElementById('autoMaxTrades').value) || 10;
+
+    // Entropy check
+    const entropy = computeEntropy(autoTickBuffer.slice(-50));
+    if (entropy < 2.8) {
+      recs.push({ setting: 'autoThreshold', current: currentThreshold,
+        suggested: Math.min(95, currentThreshold + 10),
+        reason: 'Low entropy (' + entropy.toFixed(2) + '/3.32) — digit distribution is uneven. Raising threshold recommended.' });
+    } else if (entropy > 3.2) {
+      recs.push({ setting: 'autoThreshold', current: currentThreshold,
+        suggested: Math.max(65, currentThreshold - 5),
+        reason: 'High entropy (' + entropy.toFixed(2) + '/3.32) — distribution is healthy. Slight threshold relaxation possible.' });
+    }
+
+    // Chi-square check
+    const chi = computeChiSquare(autoTickBuffer.slice(-50));
+    if (chi.favorable) {
+      recs.push({ setting: 'autoMinGap', current: currentMinGap,
+        suggested: Math.max(2, currentMinGap - 1),
+        reason: 'Danger digits underrepresented (' + Math.round(chi.dangerActual) + ' vs expected ' + Math.round(chi.dangerExpected) + '). Reducing min gap is reasonable.' });
+    } else if (chi.stat > 18) {
+      recs.push({ setting: 'autoCooldown', current: currentCooldown,
+        suggested: Math.min(15, currentCooldown + 2),
+        reason: 'Chi-square stat high (' + chi.stat.toFixed(1) + ') — unusual distribution detected. Increase cooldown.' });
+    }
+
+    // Volatility regime
+    if (isHighVolatility()) {
+      recs.push({ setting: 'autoThreshold', current: currentThreshold,
+        suggested: Math.min(95, currentThreshold + 5),
+        reason: 'High volatility regime detected. Raising threshold to reduce exposure.' });
+    }
+
+    // Performance memory
+    const hour = new Date().getHours();
+    const timeProfile = getTimeProfile(currentMarket);
+    if (timeProfile && timeProfile.winRate < 0.45 && timeProfile.count >= 5) {
+      recs.push({ setting: 'autoThreshold', current: currentThreshold,
+        suggested: Math.min(95, currentThreshold + 8),
+        reason: 'Historical win rate at hour ' + timeProfile.hour + ':00 is ' +
+          Math.round(timeProfile.winRate * 100) + '% (' + timeProfile.count + ' trades). Tightening threshold.' });
+    } else if (timeProfile && timeProfile.winRate > 0.70 && timeProfile.count >= 5) {
+      recs.push({ setting: 'autoMaxTrades', current: currentMaxTrades,
+        suggested: Math.min(20, currentMaxTrades + 2),
+        reason: 'Historical win rate at hour ' + timeProfile.hour + ':00 is ' +
+          Math.round(timeProfile.winRate * 100) + '% (' + timeProfile.count + ' trades). Can allow more trades.' });
+    }
+
+    // Markov: check danger probability from most recent digit
+    if (lastMarkovDigit !== null) {
+      const dp = markovDangerProb(lastMarkovDigit);
+      if (dp > 0.30) {
+        recs.push({ setting: 'autoCooldown', current: currentCooldown,
+          suggested: Math.min(15, currentCooldown + 1),
+          reason: 'Markov analysis: after digit ' + lastMarkovDigit + ', danger digit probability is ' +
+            Math.round(dp * 100) + '% (expected 20%). Cooldown increase suggested.' });
+      }
+    }
+
+    if (recs.length === 0) {
+      autoLog('wait', '🧠 AI Analysis: All settings look optimal for current conditions.');
+      return;
+    }
+
+    // Option 1: Auto-apply protective recs, ask for loosening recs
+    const toAsk = [];
+    recs.forEach(rec => {
+      const isProtective = (
+        (rec.setting === 'autoThreshold' && rec.suggested > rec.current) ||
+        (rec.setting === 'autoCooldown'  && rec.suggested > rec.current) ||
+        (rec.setting === 'autoMinGap'    && rec.suggested > rec.current)
+      );
+      if (isProtective) {
+        // Auto-apply immediately — no approval needed
+        const el = document.getElementById(rec.setting);
+        if (el) {
+          el.value = rec.suggested;
+          autoLog('stop', '🧠 AUTO-APPLIED: ' + rec.reason.split('.')[0] + ' — ' +
+            el.closest('.auto-setting-box').querySelector('.auto-setting-label').textContent +
+            ' ' + rec.current + '→' + rec.suggested);
+        }
+      } else {
+        // Loosening rec — still needs approval
+        toAsk.push(rec);
+      }
+    });
+
+    if (toAsk.length > 0) {
+      aiRecommendation = toAsk;
+      showNextRecommendation();
+    }
+  }
+
+  function showNextRecommendation() {
+    if (!aiRecommendation || aiRecommendation.length === 0) {
+      aiRecommendation = null;
+      return;
+    }
+    const rec = aiRecommendation.shift();
+    const el = document.getElementById(rec.setting);
+    if (!el) { showNextRecommendation(); return; }
+
+    autoLog('stop',
+      '🧠 AI RECOMMENDATION: ' + rec.reason +
+      ' — Change "' + el.closest('.auto-setting-box').querySelector('.auto-setting-label').textContent +
+      '" from ' + rec.current + ' → ' + rec.suggested + '?'
+    );
+
+    // Show approval buttons in log
+    const log = document.getElementById('autoLog');
+    const btnWrap = document.createElement('div');
+    btnWrap.style.cssText = 'display:flex;gap:8px;padding:6px 0';
+    const approveBtn = document.createElement('button');
+    approveBtn.textContent = '✓ APPROVE';
+    approveBtn.style.cssText = 'flex:1;padding:6px;border-radius:6px;border:1px solid var(--green);background:rgba(0,255,136,0.1);color:var(--green);font-family:monospace;font-size:10px;cursor:pointer';
+    approveBtn.onclick = function() { approveRec(this, rec.setting, rec.suggested); };
+    const dismissBtn = document.createElement('button');
+    dismissBtn.textContent = '✗ DISMISS';
+    dismissBtn.style.cssText = 'flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:monospace;font-size:10px;cursor:pointer';
+    dismissBtn.onclick = function() { dismissRec(this); };
+    btnWrap.appendChild(approveBtn);
+    btnWrap.appendChild(dismissBtn);
+    log.insertBefore(btnWrap, log.firstChild);
+  }
+
+  function approveRec(btn, settingId, value) {
+    const el = document.getElementById(settingId);
+    if (el) {
+      el.value = value;
+      autoLog('trade', '✓ Applied: ' + settingId + ' → ' + value);
+    }
+    btn.closest('div').remove();
+    showNextRecommendation();
+  }
+
+  function dismissRec(btn) {
+    autoLog('wait', '— Recommendation dismissed.');
+    btn.closest('div').remove();
+    showNextRecommendation();
+  }
+
+  // ── MAIN ANALYSIS FUNCTION ────────────────────────────
+  // ── INTELLIGENCE 7: HOT/COLD DIGIT TRACKING ─────────
+  // Checks if safe digits are running above/below expected rate in last 20 ticks
+  function getHotColdScore(buf) {
+    if (buf.length < 20) return 0;
+    const last20 = buf.slice(-20);
+    const dangerCount = last20.filter(function(d) { return d === 4 || d === 5; }).length;
+    const dangerRate = dangerCount / 20;
+    // Expected danger rate is 20% (2 digits out of 10)
+    if (dangerRate <= 0.10) return 2;   // danger digits running very cold — very favorable
+    if (dangerRate <= 0.15) return 1;   // danger digits running cold — favorable
+    if (dangerRate >= 0.35) return -2;  // danger digits running very hot — unfavorable
+    if (dangerRate >= 0.28) return -1;  // danger digits running hot — slightly unfavorable
+    return 0;                           // normal range
+  }
+
+  // ── INTELLIGENCE 8: RUNS TEST (WALD-WOLFOWITZ) ───────
+  // Tests whether safe/danger sequence is genuinely random or clustering
+  // Clustering of danger digits = unfavorable
+  function computeRunsTest(buf) {
+    if (buf.length < 20) return { pass: true, reason: 'insufficient data' };
+    const binary = buf.map(function(d) { return (d === 4 || d === 5) ? 1 : 0; });
+    const n1 = binary.filter(function(x) { return x === 1; }).length; // danger count
+    const n0 = binary.filter(function(x) { return x === 0; }).length; // safe count
+    if (n1 === 0 || n0 === 0) return { pass: true, reason: 'no variation' };
+    // Count runs (consecutive sequences of same value)
+    let runs = 1;
+    for (var i = 1; i < binary.length; i++) {
+      if (binary[i] !== binary[i-1]) runs++;
+    }
+    // Expected runs and variance under null hypothesis of randomness
+    const n = binary.length;
+    const expectedRuns = ((2 * n0 * n1) / n) + 1;
+    const variance = (2 * n0 * n1 * (2 * n0 * n1 - n)) / (n * n * (n - 1));
+    if (variance <= 0) return { pass: true, reason: 'no variance' };
+    const z = (runs - expectedRuns) / Math.sqrt(variance);
+    // z < -1.96 means too few runs = clustering = non-random = unfavorable
+    // z > 1.96 means too many runs = alternating = also slightly suspicious
+    const clustering = z < -1.5; // danger digits are clustering together
+    return { pass: !clustering, z: parseFloat(z.toFixed(2)), runs: runs, expected: Math.round(expectedRuns) };
+  }
+
+  // ── INTELLIGENCE 9: AUTOCORRELATION CHECK ────────────
+  // Tests if current digit type has statistical relationship with digits 1-3 positions back
+  // On true RNG this should be near zero — significant correlation = suspicious
+  function computeAutocorrelation(buf, lag) {
+    if (buf.length < lag + 10) return 0;
+    // Convert to binary: 1 = danger, 0 = safe
+    const binary = buf.map(function(d) { return (d === 4 || d === 5) ? 1 : 0; });
+    const n = binary.length - lag;
+    let sumXY = 0, sumX = 0, sumY = 0, sumX2 = 0, sumY2 = 0;
+    for (var i = 0; i < n; i++) {
+      const x = binary[i];
+      const y = binary[i + lag];
+      sumXY += x * y;
+      sumX  += x;
+      sumY  += y;
+      sumX2 += x * x;
+      sumY2 += y * y;
+    }
+    const num = (n * sumXY) - (sumX * sumY);
+    const den = Math.sqrt(((n * sumX2) - (sumX * sumX)) * ((n * sumY2) - (sumY * sumY)));
+    return den === 0 ? 0 : parseFloat((num / den).toFixed(3));
+  }
+
+  function getAutocorrelationScore(buf) {
+    // Check lags 1, 2, 3 — any strong positive correlation means danger digits cluster
+    const r1 = Math.abs(computeAutocorrelation(buf, 1));
+    const r2 = Math.abs(computeAutocorrelation(buf, 2));
+    const r3 = Math.abs(computeAutocorrelation(buf, 3));
+    const maxR = Math.max(r1, r2, r3);
+    if (maxR > 0.3) return -1;  // significant correlation detected — suspicious
+    return 0;                   // no significant autocorrelation — normal
+  }
+
+  // ── INTELLIGENCE 10: Z-SCORE DEVIATION ───────────────
+  // How many standard deviations is the current danger rate from expected mean?
+  function computeZScore(buf) {
+    if (buf.length < 20) return 0;
+    const dangerCount = buf.filter(function(d) { return d === 4 || d === 5; }).length;
+    const n = buf.length;
+    const p = 0.20;          // expected danger probability
+    const mean = n * p;
+    const stdDev = Math.sqrt(n * p * (1 - p));
+    if (stdDev === 0) return 0;
+    return parseFloat(((dangerCount - mean) / stdDev).toFixed(2));
+  }
+
+  // ── MULTI-SIGNAL AGREEMENT GATE ──────────────────────
+  // Score must pass threshold AND at least 4 of 6 signals must independently agree
+  // Prevents trading when overall score looks ok but key indicators disagree
+  function checkSignalAgreement(safeRate, entropy, chiResult, dp, runsTest, zScore, hotCold) {
+    var agree = 0;
+    var details = [];
+
+    // Signal 1: Safe digit frequency above 80%
+    var s1 = safeRate > 0.80;
+    if (s1) agree++; details.push(s1 ? '✓Freq' : '✗Freq');
+
+    // Signal 2: Entropy healthy (distribution not skewed)
+    var s2 = entropy > 2.9;
+    if (s2) agree++; details.push(s2 ? '✓Ent' : '✗Ent');
+
+    // Signal 3: Chi-square — danger digits not overrepresented
+    var s3 = chiResult.stat < 18;
+    if (s3) agree++; details.push(s3 ? '✓Chi' : '✗Chi');
+
+    // Signal 4: Markov — danger probability below 28%
+    var s4 = dp < 0.28;
+    if (s4) agree++; details.push(s4 ? '✓Mkv' : '✗Mkv');
+
+    // Signal 5: Runs test — no dangerous clustering
+    var s5 = runsTest.pass;
+    if (s5) agree++; details.push(s5 ? '✓Runs' : '✗Runs');
+
+    // Signal 6: Z-score — danger rate not significantly above mean
+    var s6 = zScore < 1.5;
+    if (s6) agree++; details.push(s6 ? '✓Z' : '✗Z');
+
+    return { agree: agree, total: 6, pass: agree >= 5, details: details.join(' ') };
+  }
+
+  function analyzeAndMaybeAutoTrade(digit) {
+    if (!autoEnabled || trading) return;
+
+    autoTickBuffer.push(digit);
+    if (autoTickBuffer.length > AUTO_BUFFER_MAX) autoTickBuffer.shift();
+    autoTicksSinceLastTrade++;
+    updateMarkov(digit);
+
+    // Read all settings
+    const baseThreshold  = parseInt(document.getElementById('autoThreshold').value) || 75;
+    const adj            = rlComputeAdj();
+    const threshold      = baseThreshold + adj;
+    const userWindow     = parseInt(document.getElementById('autoWindow').value) || 50;
+    const window_        = Math.max(userWindow, MARKET_WINDOWS[currentMarket] || 50);
+    const cooldown       = parseInt(document.getElementById('autoCooldown').value) || 5;
+    const maxLossPct     = parseInt(document.getElementById('autoMaxLoss').value) || 50;
+    const profitTargetPct= parseInt(document.getElementById('autoProfitTarget').value) || 10;
+    const minGap         = parseInt(document.getElementById('autoMinGap').value) || 5;
+    const maxTrades      = parseInt(document.getElementById('autoMaxTrades').value) || 10;
+    const maxStakePct    = parseInt(document.getElementById('autoMaxStakePct').value) || 5;
+
+    // Run AI recommendation every 50 ticks while active
+    if (autoTickBuffer.length % 50 === 0) runAIRecommendation();
+
+    // ── PROFIT TARGET ────────────────────────────────────
+    const profitTargetAmt = autoSessionBalance * (profitTargetPct / 100);
+    if (autoSessionProfit >= profitTargetAmt) {
+      autoLog('stop', '🎯 PROFIT TARGET REACHED — +$' + autoSessionProfit.toFixed(2) + '. Locking in gains!');
+      stopAutoTrade(); return;
+    }
+
+    // ── MAX LOSS GUARD ───────────────────────────────────
+    const sessionLoss = autoSessionBalance - balance;
+    if (sessionLoss >= autoSessionBalance * (maxLossPct / 100)) {
+      autoLog('stop', '🛑 MAX LOSS REACHED — $' + sessionLoss.toFixed(2) + ' lost.');
+      stopAutoTrade(); return;
+    }
+
+    // ── MAX TRADES ───────────────────────────────────────
+    if (autoTradeCount >= maxTrades) {
+      autoLog('stop', '🔢 MAX TRADES REACHED — ' + autoTradeCount + ' trades. Stopping.');
+      stopAutoTrade(); return;
+    }
+
+    // ── MIN GAP ──────────────────────────────────────────
+    if (autoTicksSinceLastTrade < minGap && autoTradeCount > 0) {
+      autoLog('wait', 'Digit ' + digit + ' — Gap: ' + autoTicksSinceLastTrade + '/' + minGap);
+      updateAutoScore(15); return;
+    }
+
+    // ── COOLDOWN ─────────────────────────────────────────
+    if (autoCooldownTicks > 0) {
+      autoCooldownTicks--;
+      autoLog('wait', 'Digit ' + digit + ' — Cooldown: ' + autoCooldownTicks + ' ticks left');
+      updateAutoScore(10); return;
+    }
+
+    // ── DANGER WINDOW CHECK ──────────────────────────────
+    const dangerWindow = Math.max(3, Math.floor(cooldown / 2));
+    const recentCheck  = recentDigits.slice(-dangerWindow);
+    if (recentCheck.some(d => d === 4 || d === 5) && digit !== 4 && digit !== 5) {
+      autoLog('wait', 'Digit ' + digit + ' — Danger in last ' + dangerWindow + ' ticks [' + recentCheck.join(',') + ']');
+      updateAutoScore(20); return;
+    }
+
+    // ── HIGH VOLATILITY REGIME ───────────────────────────
+    if (isHighVolatility()) {
+      autoLog('wait', 'Digit ' + digit + ' — High volatility regime. Skipping.');
+      updateAutoScore(25); return;
+    }
+
+    // ── NEED ENOUGH DATA ─────────────────────────────────
+    const buf = autoTickBuffer.slice(-window_);
+    if (buf.length < Math.min(window_, 20)) {
+      autoLog('wait', 'Digit ' + digit + ' — Collecting data (' + buf.length + '/' + Math.min(window_, 20) + ')');
+      updateAutoScore(5); return;
+    }
+
+    // ── SCORE CALCULATION ─────────────────────────────────
+
+    // 1. Frequency score (0-35)
+    const safeTicks = buf.filter(d => d <= 3 || d >= 6).length;
+    const safeRate  = safeTicks / buf.length;
+    const freqScore = Math.round(safeRate * 35);
+
+    // 2. Streak score (0-20) — reduced weight
+    let streak = 0;
+    for (let i = autoTickBuffer.length - 1; i >= 0; i--) {
+      if (autoTickBuffer[i] === 4 || autoTickBuffer[i] === 5) break;
+      streak++;
+    }
+    const streakScore = Math.min(20, Math.round((streak / 8) * 20));
+
+    // 3. Danger spacing score (0-25)
+    const dangerPos = [];
+    for (let i = 0; i < buf.length; i++) {
+      if (buf[i] === 4 || buf[i] === 5) dangerPos.push(i);
+    }
+    let spacingScore = 0;
+    if (dangerPos.length === 0) {
+      spacingScore = 25;
+    } else if (dangerPos.length >= 2) {
+      const gaps = [];
+      for (let i = 1; i < dangerPos.length; i++) gaps.push(dangerPos[i] - dangerPos[i-1]);
+      const avgGap = gaps.reduce((a,b) => a+b, 0) / gaps.length;
+      const expectedGap = buf.length / (dangerPos.length + 1);
+      spacingScore = Math.round(Math.min(25, (Math.min(avgGap / expectedGap, 2)) * 12));
+    } else {
+      spacingScore = dangerPos[0] < buf.length * 0.3 ? 20 : 15;
+    }
+
+    // 4. Recency score (0-20)
+    const last5Safe  = autoTickBuffer.slice(-5).every(d => d !== 4 && d !== 5);
+    const last10Safe = autoTickBuffer.slice(-10).filter(d => d === 4 || d === 5).length === 0;
+    const recencyScore = last5Safe ? (last10Safe ? 20 : 12) : 0;
+
+    // 5. INTELLIGENCE 1: Entropy bonus/penalty (0 to ±10)
+    const entropy = computeEntropy(buf);
+    const entropyScore = entropy > 3.0 ? 10 : entropy > 2.8 ? 5 : entropy < 2.5 ? -10 : 0;
+
+    // 6. INTELLIGENCE 2: Chi-square bonus (0 or 10)
+    const chiResult = computeChiSquare(buf);
+    const chiScore = chiResult.favorable ? 10 : 0;
+
+    // 7. INTELLIGENCE 3: Markov danger probability penalty (0 to -15)
+    const dp = markovDangerProb(digit);
+    const markovScore = dp > 0.35 ? -15 : dp > 0.25 ? -8 : 0;
+
+    // 8. INTELLIGENCE 5: Performance memory bonus/penalty (-10 to +10)
+    const hour = new Date().getHours();
+    const perfRate = getPerfScore(currentMarket, hour, Math.round(freqScore + streakScore));
+    const perfScore = perfRate === null ? 0 : perfRate > 0.65 ? 10 : perfRate < 0.4 ? -10 : 0;
+
+    // 9. INTELLIGENCE 7: Hot/Cold digit tracking
+    const hotCold = getHotColdScore(buf);
+
+    // 10. INTELLIGENCE 8: Runs test — danger digit clustering
+    const runsResult = computeRunsTest(buf);
+
+    // 11. INTELLIGENCE 9: Autocorrelation check (lags 1-3)
+    const autoCorr = getAutocorrelationScore(buf);
+
+    // 12. INTELLIGENCE 10: Z-score deviation
+    const zScore = computeZScore(buf);
+    const zScoreScore = zScore > 2.0 ? -10 : zScore > 1.5 ? -5 : 0;
+
+    // Current digit penalty
+    if (digit === 4 || digit === 5) {
+      updateAutoScore(0);
+      autoCooldownTicks = cooldown;
+      autoLog('loss', 'Digit ' + digit + ' — DANGER! Cooldown: ' + cooldown + ' ticks');
+      return;
+    }
+
+    const score = Math.max(0, freqScore + streakScore + spacingScore + recencyScore + entropyScore + chiScore + markovScore + perfScore + hotCold + autoCorr + zScoreScore);
+    updateAutoScore(score);
+
+    autoLog('wait',
+      'D:' + digit +
+      ' Safe:' + Math.round(safeRate * 100) + '%' +
+      ' Str:' + streak +
+      ' Ent:' + entropy.toFixed(2) +
+      ' Mkv:' + Math.round(dp * 100) + '%' +
+      ' Z:' + zScore +
+      ' Score:' + score + '/' + threshold +
+      (adj > 0 ? ' RL+' + adj : '')
+    );
+
+    // ── TRADE DECISION ───────────────────────────────────
+    if (score >= threshold) {
+      const stake = parseFloat(document.getElementById('stake').value);
+      const maxAllowedStake = (balance * maxStakePct) / 100;
+      if (stake > maxAllowedStake) {
+        autoLog('stop', '⚠ Stake $' + stake.toFixed(2) + ' > ' + maxStakePct + '% of balance. Reduce stake.');
+        updateAutoScore(0); return;
+      }
+      if (balance < stake * 2) {
+        autoLog('stop', '⚠ Insufficient balance. Auto stopped.');
+        stopAutoTrade(); return;
+      }
+      autoTradeCount++;
+      autoTicksSinceLastTrade = 0;
+      autoLog('trade',
+        '✓ TRADE #' + autoTradeCount + '/' + maxTrades +
+        ' Score:' + score + '/' + threshold +
+        ' Z:' + zScore +
+        ' Mkv:' + Math.round(dp * 100) + '%' +
+        (adj > 0 ? ' RL+' + adj : '')
+      );
+      placeTrade();
+    }
+  }
+
+  // ── HOOK INTO TICK HANDLER ───────────────────────────
+  const _origUpdateDigit = updateDigitDisplay;
+  updateDigitDisplay = function(digit, price) {
+    _origUpdateDigit(digit, price);
+    updateVolatilityBuffer(price);
+    if (autoEnabled) analyzeAndMaybeAutoTrade(digit);
+  };
+
+  // ── HOOK INTO SETTLE ─────────────────────────────────
+  const _origSettleTrade = settleTrade;
+  settleTrade = function() {
+    _origSettleTrade();
+    if (autoEnabled) {
+      const tradeWon = (overResult !== null && overResult > 0) ||
+                       (underResult !== null && underResult > 0);
+      const tradePnl = (overResult !== null ? overResult : 0) + (underResult !== null ? underResult : 0);
+      autoSessionProfit += tradePnl;
+
+      const hour = new Date().getHours();
+      const lastScore = autoTickBuffer.length > 0 ? autoTickBuffer.length : 50;
+      recordPerfMemory(currentMarket, hour, lastScore, tradeWon);
+
+      if (tradeWon) {
+        rlWins++; rlConsecWins++; rlConsecLosses = 0;
+        autoLog('trade', '✓ WIN +$' + tradePnl.toFixed(2) +
+          ' Session: $' + autoSessionProfit.toFixed(2) +
+          ' | ' + rlWins + 'W/' + rlLosses + 'L');
+      } else {
+        rlLosses++; rlConsecLosses++; rlConsecWins = 0;
+        const cooldown = parseInt(document.getElementById('autoCooldown').value) || 5;
+        autoCooldownTicks = cooldown;
+        autoLog('loss', '✗ LOSS $' + tradePnl.toFixed(2) +
+          ' Session: $' + autoSessionProfit.toFixed(2) +
+          ' | ' + rlWins + 'W/' + rlLosses + 'L' +
+          ' | Cooldown: ' + cooldown);
+      }
+
+      // Re-run AI recommendation after every 3 trades
+      if ((rlWins + rlLosses) % 3 === 0) setTimeout(runAIRecommendation, 500);
+    }
+  };
+
+</script>
+</body>
+</html>
